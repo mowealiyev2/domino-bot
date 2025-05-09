@@ -3,7 +3,7 @@ import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
-BOT_TOKEN = os.getenv("8013008405:AAGMurQl-0oA8zNVKwSkIRLocFSWZE-60tk")
+BOT_TOKEN = os.getenv("8013008405:AAHmVwT15nofWAS0dI1biUED7vFTGNFZdoA")
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
 games = {}
 
