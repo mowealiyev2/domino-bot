@@ -1,20 +1,15 @@
+import os
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
-import random
 
-BOT_TOKEN = '8013008405:AAFLg40m51d-XE5pSlaDJDQs0xnAeMsbONo'
-
+BOT_TOKEN = os.getenv("8013008405:AAFLg40m51d-XE5pSlaDJDQs0xnAeMsbONo")
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
 games = {}
 
 async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     games[update.effective_chat.id] = {
-        "players": [],
-        "hands": {},
-        "board": [],
-        "turn": None,
-        "deck": [],
-        "ids": {}
+        "players": [], "hands": {}, "board": [], "turn": None, "deck": [], "ids": {}
     }
     await update.message.reply_text("Oyun yaradıldı! /joingame yaz.")
 
@@ -102,7 +97,8 @@ async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     g["hands"][uid].append(t)
     await update.message.reply_text(f"{g['ids'][uid]} yeni daş götürdü: {t[0]}:{t[1]}")
 
-async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):cid = update.effective_chat.id
+async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cid = update.effective_chat.id
     if cid in games:
         del games[cid]
         await update.message.reply_text("Oyun dayandırıldı.")
@@ -115,6 +111,5 @@ for cmd, func in [
     ("play", play), ("draw", draw), ("stopgame", stopgame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
-
 app.add_handler(CallbackQueryHandler(showhand_callback, pattern="^showhand"))
 app.run_polling()
