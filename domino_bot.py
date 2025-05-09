@@ -1,7 +1,7 @@
 import os
 import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 BOT_TOKEN = os.getenv("8013008405:AAFLg40m51d-XE5pSlaDJDQs0xnAeMsbONo")
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
@@ -105,7 +105,23 @@ async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
+async def block_vpn_completely(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.lower() if update.message.text else ""
+    bio = update.effective_user.bio.lower() if update.effective_user.bio else ""
+
+    if "vpn.arturshi.ru" in text or "vpn.arturshi.ru" in bio:
+        try:
+            await update.message.delete()
+        except: pass
+        try:
+            await context.bot.ban_chat_member(chat_id=update.effective_chat.id, user_id=update.effective_user.id)
+        except: pass
+        user = update.effective_user
+        print(f"SPAM BLOKLANDI: {user.first_name} | ID: {user.id} | Username: @{user.username}")
+        return
+
 app = ApplicationBuilder().token(BOT_TOKEN).build()
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, block_vpn_completely), group=0)
 for cmd, func in [
     ("startgame", startgame), ("joingame", joingame), ("hand", hand),
     ("play", play), ("draw", draw), ("stopgame", stopgame)
