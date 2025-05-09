@@ -123,8 +123,8 @@ async def block_vpn_completely(update: Update, context: ContextTypes.DEFAULT_TYP
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, block_vpn_completely), group=0)
 for cmd, func in [
-    ("startgame", startgame), ("joingame", joingame), ("hand", hand),
-    ("play", play), ("draw", draw), ("stopgame", stopgame)
+    ("basla", startgame), ("qosul", joingame), ("daslar", hand),
+    ("play", play), ("draw", draw), ("dayansın", stopgame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
 app.add_handler(CallbackQueryHandler(showhand_callback, pattern="^showhand"))
