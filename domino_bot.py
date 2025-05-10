@@ -32,7 +32,7 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text("4 nəfər kifayətdir.")
     g["players"].append(uid)
     g["ids"][uid] = uname
-    if len(g["players"]) == 2:
+    if len(g["players"]) == 4:
         s = random.sample(DOMINOES, len(DOMINOES))
         g["hands"] = {g["players"][0]: s[:7], g["players"][1]: s[7:14]}
         g["deck"], g["turn"] = s[14:], g["players"][0]
