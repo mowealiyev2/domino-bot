@@ -8,6 +8,9 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
 games = {}
 
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await startgame(update, context)
+
 async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     games[update.effective_chat.id] = {
         "players": [],
@@ -111,7 +114,6 @@ async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
-# leavegame funksiyası
 async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
     uid = str(update.effective_user.id)
@@ -132,9 +134,8 @@ async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 for cmd, func in [
-    ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
-    ("oyna", play), ("cek", draw), ("dayandirr", stopgame),
-    ("cix", leavegame)
+    ("start", start), ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
+    ("oyna", play), ("cek", draw), ("dayandirr", stopgame), ("cix", leavegame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
 
