@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 import random
 
-BOT_TOKEN = 'BURAYA_OZ_TOKENINI_YAZ'  # <-- BURANI DƏYİŞMƏYİ UNUTMA
+BOT_TOKEN = '8013008405:AAE1SfOYciRHY626Wr0hoyUiIzK44rkkfEI'
 
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
 games = {}
