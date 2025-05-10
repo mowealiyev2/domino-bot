@@ -14,9 +14,10 @@ async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "board": [],
         "turn": None,
         "deck": [],
-        "ids": {}
+        "ids": {},
+        "last_drawn": {}  # Əlavə etdik
     }
-    await update.message.reply_text("Oyun yaradıldı! /joingame yaz.")
+    await update.message.reply_text("Oyun yaradıldı! /qosul yaz.")
 
 async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
@@ -24,11 +25,11 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uname = update.effective_user.username or update.effective_user.first_name
     g = games.get(cid)
     if not g:
-        return await update.message.reply_text("Əvvəlcə /startgame yaz.")
+        return await update.message.reply_text("Əvvəlcə /basla yaz.")
     if uid in g["players"]:
         return await update.message.reply_text("Artıq qoşulmusan.")
     if len(g["players"]) >= 2:
-        return await update.message.reply_text("2 nəfər kifayətdir.")
+        return await update.message.reply_text("4 nəfər kifayətdir.")
     g["players"].append(uid)
     g["ids"][uid] = uname
     if len(g["players"]) == 2:
@@ -59,6 +60,16 @@ async def showhand_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = " • ".join([f"{a}:{b}" for a, b in tiles])
     await query.answer(text=f"Sənin daşların:\n{text}", show_alert=True)
 
+async def showdrawn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    uid = str(query.from_user.id)
+    cid = query.message.chat.id
+    g = games.get(cid)
+    if not g or uid not in g["last_drawn"]:
+        return await query.answer("Daş tapılmadı", show_alert=True)
+    a, b = g["last_drawn"][uid]
+    await query.answer(text=f"Çəkdiyin daş: {a}:{b}", show_alert=True)
+
 async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
     uid = str(update.effective_user.id)
@@ -88,12 +99,11 @@ async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not h:
         winner = g["ids"][uid]
         del games[cid]
-        return await update.message.reply_text(f"{winner} qalib oldu!")
+        return await update.message.reply_text(f"{winner} qalib oldu təbrikler👏🏻")
 
     g["turn"] = [p for p in g["players"] if p != uid][0]
     await update.message.reply_text(f"{g['ids'][uid]} oynadı {t[0]}:{t[1]} — Növbə: {g['ids'][g['turn']]}")
 
-    # --- Oyun sahəsini göstər ---
     board_str = " → ".join([f"{a}:{b}" for a, b in g["board"]])
     left = g["board"][0][0]
     right = g["board"][-1][1]
@@ -106,10 +116,17 @@ async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = str(update.effective_user.id)
     g = games.get(cid)
     if not g or g["turn"] != uid or not g["deck"]:
-        return await update.message.reply_text("Növbən deyil ya da dəst boşdur.")
+        return await update.message.reply_text("Növbən deyil sebrli ol.")
+    
     t = g["deck"].pop()
     g["hands"][uid].append(t)
-    await update.message.reply_text(f"{g['ids'][uid]} yeni daş götürdü: {t[0]}:{t[1]}")
+    g["last_drawn"][uid] = t  # son çəkilən daşı yadda saxla
+
+    button = InlineKeyboardButton("Çəkdiyim daşı göstər", callback_data="showdrawn")
+    await update.message.reply_text(
+        "Çəkdiyin daşı görmək üçün kliklə:",
+        reply_markup=InlineKeyboardMarkup([[button]])
+    )
 
 async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
@@ -119,13 +136,13 @@ async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
-# Botu işə sal
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 for cmd, func in [
-    ("startgame", startgame), ("joingame", joingame), ("hand", hand),
-    ("play", play), ("draw", draw), ("stopgame", stopgame)
+    ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
+    ("oyna", play), ("cek", draw), ("dayandirr", stopgame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
 
 app.add_handler(CallbackQueryHandler(showhand_callback, pattern="^showhand"))
+app.add_handler(CallbackQueryHandler(showdrawn_callback, pattern="^showdrawn"))
 app.run_polling()
