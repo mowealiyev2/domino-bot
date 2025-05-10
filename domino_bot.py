@@ -32,12 +32,13 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text("4 nəfər kifayətdir.")
     g["players"].append(uid)
     g["ids"][uid] = uname
-    if len(g["players"]) == 4:
+    if len(g["players"]) >= 2:
         s = random.sample(DOMINOES, len(DOMINOES))
-        g["hands"] = {g["players"][0]: s[:7], g["players"][1]: s[7:14]}
-        g["deck"], g["turn"] = s[14:], g["players"][0]
-        p1, p2 = g["ids"][g["players"][0]], g["ids"][g["players"][1]]
-        await update.message.reply_text(f"Oyun başladı: {p1} vs {p2}\nNövbə: {p1}\n/daslar yaz.")
+        g["hands"] = {p: s[i*7:(i+1)*7] for i, p in enumerate(g["players"])}
+        g["deck"] = s[len(g["players"])*7:]
+        g["turn"] = g["players"][0]
+        players = " vs ".join([g["ids"][p] for p in g["players"]])
+        await update.message.reply_text(f"Oyun başladı: {players}\nNövbə: {g['ids'][g['turn']]}\n/daslar yaz.")
     else:
         await update.message.reply_text(f"{uname} qoşuldu. Başqa oyunçu gözlənilir.")
 
@@ -46,7 +47,7 @@ async def hand(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = str(update.effective_user.id)
     g = games.get(cid)
     if not g or uid not in g["players"]: return
-    button = InlineKeyboardButton("Daşlar", callback_data="showhand")  # <-- BURANI DƏYİŞDİK
+    button = InlineKeyboardButton("Daşlar", callback_data="showhand")
     await update.message.reply_text("➤ /daslar — Daşlarını görmək üçün kliklə:", reply_markup=InlineKeyboardMarkup([[button]]))
 
 async def showhand_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -101,14 +102,22 @@ async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
         del games[cid]
         return await update.message.reply_text(f"{winner} qalib oldu təbrikler👏🏻")
 
-    g["turn"] = [p for p in g["players"] if p != uid][0]
+    # Növbəni növbəti oyunçuya ver
+    i = g["players"].index(uid)
+    g["turn"] = g["players"][(i + 1) % len(g["players"])]
+
     await update.message.reply_text(f"{g['ids'][uid]} oynadı {t[0]}:{t[1]} — Növbə: {g['ids'][g['turn']]}")
 
     board_str = " → ".join([f"{a}:{b}" for a, b in g["board"]])
     left = g["board"][0][0]
     right = g["board"][-1][1]
+    await update.message.reply_text(f"Taxta: {board_str}\nSol ucu: {left} | Sağ ucu: {right}")
+
+    # Avtomatik “Daşlar” butonu
+    button = InlineKeyboardButton("Daşlar", callback_data="showhand")
     await update.message.reply_text(
-        f"Taxta: {board_str}\nSol ucu: {left} | Sağ ucu: {right}"
+        "➤ Daşlarına baxmaq üçün kliklə:",
+        reply_markup=InlineKeyboardMarkup([[button]])
     )
 
 async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -136,6 +145,27 @@ async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
+# Oyundan çıxmaq komutu
+async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cid = update.effective_chat.id
+    uid = str(update.effective_user.id)
+    g = games.get(cid)
+
+    if not g or uid not in g["players"]:
+        return await update.message.reply_text("Sən oyunda deyilsən.")
+
+    g["players"].remove(uid)
+    g["ids"].pop(uid, None)
+    g["hands"].pop(uid, None)
+    g["last_drawn"].pop(uid, None)
+
+    await update.message.reply_text(f"{update.effective_user.first_name} oyundan çıxdı.")
+
+    if len(g["players"]) < 2:
+        del games[cid]
+        await update.message.reply_text("Oyunçu sayı azaldı. Oyun dayandırıldı.")
+
+# Komandaları qeydiyyat
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 for cmd, func in [
     ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
