@@ -15,7 +15,7 @@ async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "turn": None,
         "deck": [],
         "ids": {},
-        "last_drawn": {}  # Əlavə etdik
+        "last_drawn": {}
     }
     await update.message.reply_text("Oyun yaradıldı! /qosul yaz.")
 
@@ -41,13 +41,13 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(f"{uname} qoşuldu. Başqa oyunçu gözlənilir.")
 
-async def daslar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def hand(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
     uid = str(update.effective_user.id)
     g = games.get(cid)
     if not g or uid not in g["players"]: return
-    button = InlineKeyboardButton("Daşlarını göstər", callback_data="showhand")
-    await update.message.reply_text("Daşlarını görmək üçün kliklə:", reply_markup=InlineKeyboardMarkup([[button]]))
+    button = InlineKeyboardButton("Daşlar", callback_data="showhand")  # <-- BURANI DƏYİŞDİK
+    await update.message.reply_text("➤ /daslar — Daşlarını görmək üçün kliklə:", reply_markup=InlineKeyboardMarkup([[button]]))
 
 async def showhand_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -120,7 +120,7 @@ async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     t = g["deck"].pop()
     g["hands"][uid].append(t)
-    g["last_drawn"][uid] = t  # son çəkilən daşı yadda saxla
+    g["last_drawn"][uid] = t
 
     button = InlineKeyboardButton("Çəkdiyim daşı göstər", callback_data="showdrawn")
     await update.message.reply_text(
