@@ -133,7 +133,7 @@ async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 for cmd, func in [
     ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
-    ("oyna", play), ("cək", draw), ("dayandirr", stopgame),
+    ("oyna", play), ("cek", draw), ("dayandirr", stopgame),
     ("cix", leavegame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
