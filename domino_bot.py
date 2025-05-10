@@ -1,8 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 import random
-
 import os
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
@@ -111,10 +111,30 @@ async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
+# leavegame funksiyası
+async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cid = update.effective_chat.id
+    uid = str(update.effective_user.id)
+    g = games.get(cid)
+    if not g or uid not in g["players"]:
+        return await update.message.reply_text("Heç bir oyunda deyilsən.")
+    
+    name = g["ids"].get(uid, "İstifadəçi")
+    g["players"].remove(uid)
+    g["ids"].pop(uid, None)
+    g["hands"].pop(uid, None)
+
+    await update.message.reply_text(f"{name} oyundan çıxdı.")
+
+    if len(g["players"]) < 2:
+        del games[cid]
+        await update.message.reply_text("Oyun dayandırıldı. Yetərli oyunçu qalmadı.")
+
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 for cmd, func in [
-    ("startgame", startgame), ("joingame", joingame), ("hand", hand),
-    ("play", play), ("draw", draw), ("stopgame", stopgame)
+    ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
+    ("oyna", play), ("cək", draw), ("dayandirr", stopgame),
+    ("cix", leavegame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
 
