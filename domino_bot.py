@@ -1,14 +1,21 @@
-import os
-import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+import random
+
+import os
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+
 DOMINOES = [(i, j) for i in range(7) for j in range(i, 7)]
 games = {}
 
 async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     games[update.effective_chat.id] = {
-        "players": [], "hands": {}, "board": [], "turn": None, "deck": [], "ids": {}
+        "players": [],
+        "hands": {},
+        "board": [],
+        "turn": None,
+        "deck": [],
+        "ids": {}
     }
     await update.message.reply_text("Oyun yaradıldı! /joingame yaz.")
 
@@ -96,35 +103,19 @@ async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     g["hands"][uid].append(t)
     await update.message.reply_text(f"{g['ids'][uid]} yeni daş götürdü: {t[0]}:{t[1]}")
 
-async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    cid = update.effective_chat.id
+async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):cid = update.effective_chat.id
     if cid in games:
         del games[cid]
         await update.message.reply_text("Oyun dayandırıldı.")
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
-async def block_vpn_completely(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.lower() if update.message.text else ""
-    bio = update.effective_user.bio.lower() if update.effective_user.bio else ""
-
-    if "vpn.arturshi.ru" in text or "vpn.arturshi.ru" in bio:
-        try:
-            await update.message.delete()
-        except: pass
-        try:
-            await context.bot.ban_chat_member(chat_id=update.effective_chat.id, user_id=update.effective_user.id)
-        except: pass
-        user = update.effective_user
-        print(f"SPAM BLOKLANDI: {user.first_name} | ID: {user.id} | Username: @{user.username}")
-        return
-
 app = ApplicationBuilder().token(BOT_TOKEN).build()
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, block_vpn_completely), group=0)
 for cmd, func in [
-    ("basla", startgame), ("qosul", joingame), ("daslar", hand),
-    ("play", play), ("draw", draw), ("dayansın", stopgame)
+    ("startgame", startgame), ("joingame", joingame), ("hand", hand),
+    ("play", play), ("draw", draw), ("stopgame", stopgame)
 ]:
     app.add_handler(CommandHandler(cmd, func))
+
 app.add_handler(CallbackQueryHandler(showhand_callback, pattern="^showhand"))
 app.run_polling()
