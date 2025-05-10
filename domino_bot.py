@@ -41,7 +41,7 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(f"{uname} qoşuldu. Başqa oyunçu gözlənilir.")
 
-async def hand(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def daslar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
     uid = str(update.effective_user.id)
     g = games.get(cid)
