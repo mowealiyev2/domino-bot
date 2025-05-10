@@ -17,7 +17,7 @@ async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "deck": [],
         "ids": {}
     }
-    await update.message.reply_text("Oyun yaradıldı! /joingame yaz.")
+    await update.message.reply_text("Oyun yaradıldı! /qosul yaz.")
 
 async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
@@ -25,7 +25,7 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uname = update.effective_user.username or update.effective_user.first_name
     g = games.get(cid)
     if not g:
-        return await update.message.reply_text("Əvvəlcə /startgame yaz.")
+        return await update.message.reply_text("Əvvəlcə /baslat yaz.")
     if uid in g["players"]:
         return await update.message.reply_text("Artıq qoşulmusan.")
     if len(g["players"]) >= 2:
@@ -37,7 +37,7 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         g["hands"] = {g["players"][0]: s[:7], g["players"][1]: s[7:14]}
         g["deck"], g["turn"] = s[14:], g["players"][0]
         p1, p2 = g["ids"][g["players"][0]], g["ids"][g["players"][1]]
-        await update.message.reply_text(f"Oyun başladı: {p1} vs {p2}\nNövbə: {p1}\n/hand yaz.")
+        await update.message.reply_text(f"Oyun başladı: {p1} vs {p2}\nNövbə: {p1}\n/daslar yaz.")
     else:
         await update.message.reply_text(f"{uname} qoşuldu. Başqa oyunçu gözlənilir.")
 
