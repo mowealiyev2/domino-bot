@@ -28,7 +28,7 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text("Əvvəlcə /basla yaz.")
     if uid in g["players"]:
         return await update.message.reply_text("Artıq qoşulmusan.")
-    if len(g["players"]) >= 2:
+    if len(g["players"]) >= 4:
         return await update.message.reply_text("4 nəfər kifayətdir.")
     g["players"].append(uid)
     g["ids"][uid] = uname
