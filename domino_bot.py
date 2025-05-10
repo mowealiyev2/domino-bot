@@ -89,7 +89,7 @@ async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not h:
         winner = g["ids"][uid]
         del games[cid]
-        return await update.message.reply_text(f"{winner} qalib oldu!")
+        return await update.message.reply_text(f"{winner} qalib oldu təbriklər👏🏻")
     g["turn"] = [p for p in g["players"] if p != uid][0]
     await update.message.reply_text(f"{g['ids'][uid]} oynadı {t[0]}:{t[1]} — Növbə: {g['ids'][g['turn']]}")
 
