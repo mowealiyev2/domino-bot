@@ -37,7 +37,7 @@ async def joingame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         g["hands"] = {g["players"][0]: s[:7], g["players"][1]: s[7:14]}
         g["deck"], g["turn"] = s[14:], g["players"][0]
         p1, p2 = g["ids"][g["players"][0]], g["ids"][g["players"][1]]
-        await update.message.reply_text(f"Oyun başladı: {p1} vs {p2}\nNövbə: {p1}\n/hand yaz.")
+        await update.message.reply_text(f"Oyun başladı: {p1} vs {p2}\nNövbə: {p1}\n/daslar yaz.")
     else:
         await update.message.reply_text(f"{uname} qoşuldu. Başqa oyunçu gözlənilir.")
 
