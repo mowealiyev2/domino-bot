@@ -103,7 +103,8 @@ async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     g["hands"][uid].append(t)
     await update.message.reply_text(f"{g['ids'][uid]} yeni daş götürdü: {t[0]}:{t[1]}")
 
-async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):cid = update.effective_chat.id
+async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cid = update.effective_chat.id
     if cid in games:
         del games[cid]
         await update.message.reply_text("Oyun dayandırıldı.")
