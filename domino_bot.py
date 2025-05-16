@@ -56,7 +56,7 @@ async def showhand_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = query.message.chat.id
     g = games.get(cid)
     if not g or uid not in g["hands"]:
-        return await query.answer("Daş tapılmadı", show_alert=True)
+        return await query.answer("Tələsmə Xaiş)", show_alert=True)
     tiles = g["hands"][uid]
     text = " • ".join([f"{a}:{b}" for a, b in tiles])
     await query.answer(text=f"Sənin daşların:\n{text}", show_alert=True)
@@ -113,7 +113,6 @@ async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
     right = g["board"][-1][1]
     await update.message.reply_text(f"Taxta: {board_str}\nSol ucu: {left} | Sağ ucu: {right}")
 
-    # Avtomatik “Daşlar” butonu
     button = InlineKeyboardButton("Daşlar", callback_data="showhand")
     await update.message.reply_text(
         "➤ Daşlarına baxmaq üçün kliklə:",
@@ -125,13 +124,13 @@ async def draw(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uid = str(update.effective_user.id)
     g = games.get(cid)
     if not g or g["turn"] != uid or not g["deck"]:
-        return await update.message.reply_text("Növbən deyil sebrli ol.")
+        return await update.message.reply_text("Növbən deyil səbrli ol.")
     
     t = g["deck"].pop()
     g["hands"][uid].append(t)
     g["last_drawn"][uid] = t
 
-    button = InlineKeyboardButton("Çəkdiyim daşı göstər", callback_data="showdrawn")
+    button = InlineKeyboardButton("Çəkdiyin daşı göstər", callback_data="showdrawn")
     await update.message.reply_text(
         "Çəkdiyin daşı görmək üçün kliklə:",
         reply_markup=InlineKeyboardMarkup([[button]])
@@ -145,7 +144,6 @@ async def stopgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Aktiv oyun yoxdur.")
 
-# Oyundan çıxmaq komutu
 async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cid = update.effective_chat.id
     uid = str(update.effective_user.id)
@@ -165,11 +163,28 @@ async def leavegame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         del games[cid]
         await update.message.reply_text("Oyunçu sayı azaldı. Oyun dayandırıldı.")
 
+# ✅ PAS FUNKSİYASI
+async def passturn(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cid = update.effective_chat.id
+    uid = str(update.effective_user.id)
+    g = games.get(cid)
+
+    if not g:
+        return await update.message.reply_text("Aktiv oyun yoxdur.")
+    if g["turn"] != uid:
+        return await update.message.reply_text("Növbən deyil.")
+
+    i = g["players"].index(uid)
+    g["turn"] = g["players"][(i + 1) % len(g["players"])]
+
+    await update.message.reply_text(f"{g['ids'][uid]} pas verdi. Növbə: {g['ids'][g['turn']]}")
+
 # Komandaları qeydiyyat
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 for cmd, func in [
     ("baslat", startgame), ("qosul", joingame), ("daslar", hand),
-    ("oyna", play), ("cek", draw), ("dayandirr", stopgame), ("cixmaq", leavegame)
+    ("oyna", play), ("cek", draw), ("dayandirr", stopgame),
+    ("cixmaq", leavegame), ("pas", passturn)  # <- PAS ƏLAVƏ OLUNDU
 ]:
     app.add_handler(CommandHandler(cmd, func))
 
